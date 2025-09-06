@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computación Móvil - Carrusel Premium</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;800&display=swap');
+
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body {
+    font-family: 'Exo 2', sans-serif;
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Partículas animadas de fondo */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="grad1"><stop offset="0%" stop-color="%23ffffff" stop-opacity="0.8"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></radialGradient></defs><circle cx="100" cy="100" r="2" fill="url(%23grad1)"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/></circle><circle cx="300" cy="200" r="1.5" fill="url(%23grad1)"><animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite" begin="1s"/></circle><circle cx="700" cy="150" r="1" fill="url(%23grad1)"><animate attributeName="opacity" values="0;1;0" dur="5s" repeatCount="indefinite" begin="2s"/></circle></svg>') repeat;
+    animation: float 20s infinite linear;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) translateX(0px); }
+    25% { transform: translateY(-20px) translateX(10px); }
+    50% { transform: translateY(-40px) translateX(-5px); }
+    75% { transform: translateY(-20px) translateX(-10px); }
+    100% { transform: translateY(0px) translateX(0px); }
+}
+
+.carousel-container {
+    max-width: 1200px;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+h1 {
+    text-align: center;
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 3.5em;
+    background: linear-gradient(45deg, #00d4ff, #ff00ff, #ffff00, #00ff00);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 3s ease-in-out infinite;
+    margin-bottom: 40px;
+    text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    position: relative;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
+    50% { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
+}
+
+.carousel {
+    position: relative;
+    height: 600px;
+    overflow: hidden;
+    border-radius: 25px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 0 100px rgba(0, 212, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.carousel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: scanline 8s linear infinite;
+    z-index: 1;
+}
+
+@keyframes scanline {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(1.1);
+}
+
+.slide.active { 
+    opacity: 1; 
+    visibility: visible;
+    transform: scale(1);
+}
+
+.slide.next {
+    transform: translateX(100%) scale(0.8);
+}
+
+.slide.prev {
+    transform: translateX(-100%) scale(0.8);
+}
+
+/* Fondos con efectos de paralaje mejorados */
+.slide:nth-child(1) { 
+    background: 
+        radial-gradient(circle at 30% 20%, rgba(0, 212, 255, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(255, 0, 255, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), 
+        url('https://hiraoka.com.pe/media/mageplaza/blog/post/l/a/laptops-con-inteligencia-artificial-guia-de-compra.jpg');
+}
+
+.slide:nth-child(2) { 
+    background: 
+        radial-gradient(circle at 20% 70%, rgba(0, 255, 0, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, rgba(255, 255, 0, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), 
+        url('https://www.hostingplus.mx/wp-content/uploads/2021/10/Que_tipos_de_sistemas_operativos_existen.jpg');
+}
+
+.slide:nth-child(3) { 
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(255, 100, 0, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), 
+        url('https://thumbs.dreamstime.com/b/persona-escribiendo-en-un-port%C3%A1til-con-iconos-de-api-flotando-representando-el-desarrollo-software-y-aplicaciones-una-est%C3%A1-389326716.jpg');
+}
+
+.slide:nth-child(4) { 
+    background: 
+        radial-gradient(circle at 40% 60%, rgba(128, 0, 255, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), 
+        url('https://dplnews.com/wp-content/uploads/2019/04/dplnews_ID_dn220419.jpg');
+}
+
+.slide:nth-child(5) { 
+    background: 
+        radial-gradient(circle at 60% 40%, rgba(255, 0, 100, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), 
+        url('https://www.trecebits.com/wp-content/uploads/2024/04/apps-descargas-juegos.jpg');
+}
+
+.slide:nth-child(6) { 
+    background: 
+        radial-gradient(circle at 25% 75%, rgba(0, 255, 255, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), 
+        url('https://www.nyce.org.mx/wp-content/uploads/2023/11/CIberseguridad-05042022.png');
+}
+
+.slide-content {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(20px);
+    padding: 50px;
+    border-radius: 20px;
+    color: white;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 2;
+    transform: translateY(30px);
+    animation: slideUp 1s ease-out forwards 0.5s;
+    opacity: 0;
+}
+
+.slide.active .slide-content {
+    animation: slideUp 1s ease-out forwards 0.5s;
+}
+
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide h2 { 
+    font-family: 'Orbitron', monospace;
+    font-size: 2.8em; 
+    margin-bottom: 25px; 
+    font-weight: 700;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(45deg, #fff, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+}
+
+.slide h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+}
+
+.slide p { 
+    font-size: 1.2em; 
+    line-height: 1.8; 
+    margin-bottom: 25px; 
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    font-weight: 300;
+    text-align: justify;
+}
+
+.slide-icon { 
+    font-size: 4em; 
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.feature-item { 
+    background: rgba(255, 255, 255, 0.05); 
+    padding: 25px; 
+    border-radius: 15px; 
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.feature-item:hover::before {
+    left: 100%;
+}
+
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+    border-color: rgba(0, 212, 255, 0.5);
+}
+
+.feature-item h4 { 
+    font-size: 1.3em; 
+    margin-bottom: 12px; 
+    color: #00d4ff;
+    font-weight: 600;
+}
+
+.feature-item p { 
+    font-size: 1em; 
+    color: rgba(255, 255, 255, 0.9); 
+    margin: 0;
+    line-height: 1.5;
+}
+
+.carousel-controls { 
+    display: flex; 
+    justify-content: center; 
+    gap: 25px; 
+    margin-top: 40px;
+}
+
+.carousel-btn {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(0, 212, 255, 0.5);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    font-family: 'Exo 2', sans-serif;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.carousel-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+}
+
+.carousel-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.carousel-btn:hover { 
+    background: rgba(0, 212, 255, 0.2); 
+    border-color: #00d4ff;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    transform: translateY(-3px);
+}
+
+.carousel-btn:active {
+    transform: translateY(-1px);
+}
+
+.indicators { 
+    display: flex; 
+    justify-content: center; 
+    gap: 15px; 
+    margin-top: 30px; 
+}
+
+.indicator { 
+    width: 15px; 
+    height: 15px; 
+    border-radius: 50%; 
+    background: rgba(255, 255, 255, 0.3); 
+    cursor: pointer; 
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(0, 212, 255, 0.5);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+}
+
+.indicator.active { 
+    background: #00d4ff; 
+    transform: scale(1.4);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.indicator.active::before {
+    width: 100%;
+    height: 100%;
+}
+
+.indicator:hover:not(.active) {
+    background: rgba(0, 212, 255, 0.6);
+    transform: scale(1.2);
+}
+
+/* Efectos de progreso */
+.progress-ring {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 60px;
+    height: 60px;
+    z-index: 10;
+}
+
+.progress-ring circle {
+    stroke: rgba(0, 212, 255, 0.3);
+    stroke-width: 3;
+    fill: transparent;
+    stroke-dasharray: 157;
+    stroke-dashoffset: 157;
+    transform-origin: center;
+    transform: rotate(-90deg);
+    transition: stroke-dashoffset 5s linear;
+}
+
+.progress-ring.active circle {
+    stroke-dashoffset: 0;
+    stroke: #00d4ff;
+}
+
+/* Responsive mejorado */
+@media (max-width: 768px) {
+    .carousel { height: 450px; } /* más bajito en tablets */
+    .slide-content { 
+        padding: 25px; 
+        max-width: 95%;
+    }
+    .slide h2 { font-size: 1.8em; }
+    .slide p { font-size: 1em; }
+    h1 { font-size: 2em; margin-bottom: 20px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .carousel-controls { flex-wrap: wrap; gap: 10px; }
+    .carousel-btn { padding: 10px 18px; font-size: 0.9em; }
+    .slide-icon { font-size: 2.5em; }
+}
+
+@media (max-width: 480px) {
+    .carousel { height: 380px; } /* más reducido aún */
+    .slide-content { 
+        padding: 15px; 
+    }
+    .slide h2 { font-size: 1.4em; margin-bottom: 10px; }
+    .slide p { font-size: 0.9em; line-height: 1.4; }
+    h1 { font-size: 1.5em; }
+    .carousel-btn { 
+        padding: 8px 14px; 
+        font-size: 0.8em; 
+        border-radius: 30px; 
+    }
+    .slide-icon { font-size: 2em; margin-bottom: 10px; }
+}
+
+/* Animaciones adicionales */
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.6); }
+}
+
+.carousel:hover {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* Efecto de carga inicial */
+.carousel-container {
+    animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="carousel-container">
+    <h1>📱 COMPUTACIÓN MÓVIL</h1>
+
+    <div class="carousel">
+        <!-- Anillo de progreso -->
+        <svg class="progress-ring active" width="60" height="60">
+            <circle cx="30" cy="30" r="25"/>
+        </svg>
+
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-icon">📱</div>
+                <h2>¿Qué es la Computación Móvil?</h2>
+                <p>La computación móvil es un paradigma tecnológico revolucionario que permite el procesamiento, almacenamiento y transmisión de datos utilizando dispositivos portátiles como smartphones, tablets y wearables.</p>
+                <p>Ha transformado radicalmente la forma en que accedemos a la información, ofreciendo conectividad ubicua y servicios personalizados en cualquier momento y lugar del planeta.</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-icon">🔧</div>
+                <h2>Componentes Clave</h2>
+                <p>Los elementos fundamentales que hacen posible la revolución móvil:</p>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h4>⚡ Hardware Móvil</h4>
+                        <p>Procesadores avanzados, memoria optimizada, sensores inteligentes, pantallas táctiles de alta resolución</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🖥️ Sistemas Operativos</h4>
+                        <p>Android, iOS, Windows Mobile, sistemas especializados para IoT</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📡 Conectividad</h4>
+                        <p>WiFi 6, 4G/5G, Bluetooth 5.0, NFC, tecnologías emergentes</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📱 Aplicaciones</h4>
+                        <p>Software nativo y híbrido, PWAs, aplicaciones empresariales</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-icon">⚡</div>
+                <h2>Tecnologías Habilitadoras</h2>
+                <p>La computación móvil se fundamenta en tecnologías de vanguardia:</p>
+                <p><strong>• Redes 5G:</strong> Velocidades ultrarrápidas hasta 10Gbps y latencia ultra-baja<br>
+                <strong>• GPS Avanzado:</strong> Sistemas de posicionamiento de precisión centimétrica<br>
+                <strong>• Sensores IoT:</strong> Acelerómetros, giroscopios, cámaras IA, biométricos<br>
+                <strong>• Edge Computing:</strong> Procesamiento distribuido en el borde de la red<br>
+                <strong>• Cloud Native:</strong> Arquitecturas serverless y microservicios</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-icon">🌟</div>
+                <h2>Aplicaciones Revolucionarias</h2>
+                <p>Sectores donde la computación móvil está transformando el mundo:</p>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h4>💳 Fintech Móvil</h4>
+                        <p>Pagos contactless, blockchain, criptomonedas, banca digital avanzada</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🏥 Salud Digital</h4>
+                        <p>Telemedicina IA, monitoreo continuo, diagnósticos remotos</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🎓 EdTech</h4>
+                        <p>Realidad virtual educativa, IA personalizada, metaverso académico</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🏠 Smart Cities</h4>
+                        <p>IoT urbano, ciudades inteligentes, sostenibilidad digital</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-icon">🚧</div>
+                <h2>Desafíos del Presente</h2>
+                <p>Los retos tecnológicos más críticos que enfrentamos:</p>
+                <p><strong>• Autonomía Energética:</strong> Baterías de larga duración y carga ultrarrápida<br>
+                <strong>• Ciberseguridad:</strong> Protección contra amenazas avanzadas y privacidad<br>
+                <strong>• Conectividad Global:</strong> Internet satelital y cobertura universal<br>
+                <strong>• UX Intuitiva:</strong> Interfaces conversacionales y gestuales<br>
+                <strong>• Sostenibilidad:</strong> Tecnología verde y economía circular</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-icon">🔮</div>
+                <h2>El Futuro Está Aquí</h2>
+                <p>Tecnologías emergentes que revolucionarán la computación móvil:</p>
+                <p><strong>• Dispositivos Cuánticos:</strong> Smartphones con procesamiento cuántico<br>
+                <strong>• IA Generativa:</strong> Asistentes con inteligencia artificial avanzada<br>
+                <strong>• Realidad Mixta:</strong> Mundos virtuales indistinguibles de la realidad<br>
+                <strong>• Holografía Móvil:</strong> Proyecciones 3D desde dispositivos portátiles<br>
+                <strong>• Brain-Computer:</strong> Control mental directo de dispositivos</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="carousel-controls">
+        <button class="carousel-btn" onclick="previousSlide()">← Anterior</button>
+        <button class="carousel-btn" onclick="toggleAutoplay()" id="autoplayBtn">⏸️ Pausar</button>
+        <button class="carousel-btn" onclick="nextSlide()">Siguiente →</button>
+    </div>
+
+    <div class="indicators" id="indicators"></div>
+</div>
+
+<script>
+// Variables globales del carrusel
+let currentSlide = 0;
+let isAutoplay = true;
+let autoplayInterval;
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+
+// Inicializar el carrusel
+function initCarousel() {
+    createIndicators();
+    updateProgressRing();
+    startAutoplay();
+}
+
+// Crear indicadores dinámicamente
+function createIndicators() {
+    const indicatorsContainer = document.getElementById('indicators');
+    indicatorsContainer.innerHTML = '';
+    
+    for (let i = 0; i < totalSlides; i++) {
+        const indicator = document.createElement('div');
+        indicator.className = `indicator ${i === 0 ? 'active' : ''}`;
+        indicator.onclick = () => goToSlide(i);
+        indicatorsContainer.appendChild(indicator);
+    }
+}
+
+// Ir a un slide específico
+function goToSlide(slideIndex) {
+    // Remover clase active de todos los slides
+    slides.forEach((slide, index) => {
+        slide.classList.remove('active', 'prev', 'next');
+        
+        if (index === slideIndex) {
+            slide.classList.add('active');
+        } else if (index < slideIndex) {
+            slide.classList.add('prev');
+        } else {
+            slide.classList.add('next');
+        }
+    });
+    
+    // Actualizar indicadores
+    const indicators = document.querySelectorAll('.indicator');
+    indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === slideIndex);
+    });
+    
+    currentSlide = slideIndex;
+    updateProgressRing();
+}
+
+// Ir al siguiente slide
+function nextSlide() {
+    const nextIndex = (currentSlide + 1) % totalSlides;
+    goToSlide(nextIndex);
+}
+
+// Ir al slide anterior
+function previousSlide() {
+    const prevIndex = (currentSlide - 1 + totalSlides) % totalSlides;
+    goToSlide(prevIndex);
+}
+
+// Actualizar anillo de progreso
+function updateProgressRing() {
+    const progressRing = document.querySelector('.progress-ring');
+    const circle = progressRing.querySelector('circle');
+    
+    // Resetear el progreso
+    circle.style.strokeDashoffset = '157';
+    
+    // Aplicar nuevo progreso después de un breve delay
+    setTimeout(() => {
+        if (isAutoplay) {
+            circle.style.strokeDashoffset = '0';
+        }
+    }, 100);
+}
+
+// Iniciar autoplay
+function startAutoplay() {
+    if (autoplayInterval) clearInterval(autoplayInterval);
+    
+    if (isAutoplay) {
+        autoplayInterval = setInterval(() => {
+            nextSlide();
+        }, 5000); // Cambiar cada 5 segundos
+        
+        document.getElementById('autoplayBtn').textContent = '⏸️ Pausar';
+    }
+}
+
+// Pausar autoplay
+function stopAutoplay() {
+    if (autoplayInterval) {
+        clearInterval(autoplayInterval);
+        autoplayInterval = null;
+    }
+    
+    // Pausar el anillo de progreso
+    const circle = document.querySelector('.progress-ring circle');
+    circle.style.strokeDashoffset = circle.style.strokeDashoffset;
+    
+    document.getElementById('autoplayBtn').textContent = '▶️ Reproducir';
+}
+
+// Toggle autoplay
+function toggleAutoplay() {
+    isAutoplay = !isAutoplay;
+    
+    if (isAutoplay) {
+        startAutoplay();
+        updateProgressRing();
+    } else {
+        stopAutoplay();
+    }
+}
+
+// Eventos de teclado
+document.addEventListener('keydown', (e) => {
+    switch(e.key) {
+        case 'ArrowLeft':
+            previousSlide();
+            break;
+        case 'ArrowRight':
+            nextSlide();
+            break;
+        case ' ':
+            e.preventDefault();
+            toggleAutoplay();
+            break;
+    }
+});
+
+// Pausar autoplay al hacer hover (solo en desktop)
+if (window.innerWidth > 768) {
+    document.querySelector('.carousel').addEventListener('mouseenter', () => {
+        if (isAutoplay) {
+            clearInterval(autoplayInterval);
+            const circle = document.querySelector('.progress-ring circle');
+            circle.style.animationPlayState = 'paused';
+        }
+    });
+
+    document.querySelector('.carousel').addEventListener('mouseleave', () => {
+        if (isAutoplay) {
+            startAutoplay();
+            updateProgressRing();
+        }
+    });
+}
+
+// Soporte para gestos táctiles
+let startX = 0;
+let startY = 0;
+let endX = 0;
+let endY = 0;
+let minSwipeDistance = 50;
+
+document.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', (e) => {
+    endX = e.changedTouches[0].clientX;
+    endY = e.changedTouches[0].clientY;
+    handleSwipe();
+});
+
+function handleSwipe() {
+    const diffX = startX - endX;
+    const diffY = startY - endY;
+    
+    // Solo procesar swipes horizontales
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
+        if (diffX > 0) {
+            // Swipe left - siguiente slide
+            nextSlide();
+        } else {
+            // Swipe right - slide anterior
+            previousSlide();
+        }
+    }
+}
+
+// Efectos de mouse mejorados (solo desktop)
+if (window.innerWidth > 768) {
+    document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+        
+        const activeSlide = document.querySelector('.slide.active');
+        if (activeSlide) {
+            const moveX = (mouseX - 0.5) * 20;
+            const moveY = (mouseY - 0.5) * 20;
+            activeSlide.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.02)`;
+        }
+    });
+
+    document.addEventListener('mouseleave', () => {
+        const activeSlide = document.querySelector('.slide.active');
+        if (activeSlide) {
+            activeSlide.style.transform = 'translate(0, 0) scale(1)';
+        }
+    });
+}
+
+// Efecto parallax en móvil con touchmove
+if (window.innerWidth <= 768) {
+    let isParallaxActive = false;
+    
+    document.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isParallaxActive = true;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isParallaxActive) return;
+        
+        const moveX = e.touches[0].clientX - startX;
+        const moveY = e.touches[0].clientY - startY;
+
+        const activeSlide = document.querySelector('.slide.active');
+        if (activeSlide && Math.abs(moveX) < 100 && Math.abs(moveY) < 100) {
+            activeSlide.style.transform = `translate(${moveX / 20}px, ${moveY / 20}px) scale(1.02)`;
+        }
+    });
+
+    document.addEventListener('touchend', () => {
+        isParallaxActive = false;
+        const activeSlide = document.querySelector('.slide.active');
+        if (activeSlide) {
+            activeSlide.style.transition = "transform 0.3s ease-out";
+            activeSlide.style.transform = 'translate(0, 0) scale(1)';
+            setTimeout(() => {
+                activeSlide.style.transition = "";
+            }, 300);
+        }
+    });
+}
+
+// Inicializar cuando la página cargue completamente
+document.addEventListener('DOMContentLoaded', () => {
+    initCarousel();
+});
+
+// Manejar cambios de visibilidad de la página
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopAutoplay();
+    } else if (isAutoplay) {
+        startAutoplay();
+        updateProgressRing();
+    }
+});
+</script>
+</body>
+</html>
